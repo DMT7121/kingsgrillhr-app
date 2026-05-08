@@ -1,0 +1,2 @@
+import { employees, approvals, candidates, notifications, shifts, kpis } from "@/lib/mock-data";
+export const hrApi = { employees: { list: async () => employees, getById: async (id: string) => employees.find((item) => item.id === id) }, attendance: { today: async () => ({ checkIn: "08:01", checkOut: "--:--", status: "Đang trong ca" }) }, approvals: { list: async () => approvals }, recruitment: { candidates: async () => candidates }, notifications: { list: async () => notifications }, shifts: { list: async () => shifts }, performance: { kpis: async () => kpis } };
