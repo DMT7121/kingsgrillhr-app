@@ -52,32 +52,38 @@ $$;
 
 create or replace function public.current_user_role()
 returns public.app_role
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select coalesce((select role from public.profiles where id = auth.uid()), 'employee'::public.app_role);
+begin
+  return coalesce((select role from public.profiles where id = auth.uid()), 'employee'::public.app_role);
+end;
 $$;
 
 create or replace function public.is_admin_like()
 returns boolean
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select public.current_user_role() in ('hr', 'admin', 'super_admin');
+begin
+  return public.current_user_role() in ('hr', 'admin', 'super_admin');
+end;
 $$;
 
 create or replace function public.current_employee_id()
 returns uuid
-language sql
+language plpgsql
 stable
 security definer
 set search_path = public
 as $$
-  select employee_id from public.profiles where id = auth.uid();
+begin
+  return (select employee_id from public.profiles where id = auth.uid());
+end;
 $$;
 
 -- =========================================================

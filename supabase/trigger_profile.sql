@@ -15,8 +15,8 @@ BEGIN
     NEW.id,
     NEW.email,
     NEW.raw_user_meta_data->>'full_name',
-    'admin', -- Đặt mặc định là admin cho tài khoản đầu tiên để dễ test, sau đó sửa lại
-    'active'
+    'admin'::public.app_role, -- Đặt mặc định là admin cho tài khoản đầu tiên để dễ test, sau đó sửa lại
+    'active'::public.employee_status
   );
   RETURN NEW;
 END;
