@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: "Hệ thống quản lý nhân sự King's Grill — Chấm công, nghỉ phép, lương, KPI, tuyển dụng",
 };
 
+export const runtime = "edge";
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
