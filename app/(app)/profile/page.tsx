@@ -92,7 +92,7 @@ export default function ProfilePage() {
           />
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-slate-900">{profile?.full_name || "Nguyễn Minh Anh"}</h2>
+            <h2 className="text-xl font-bold text-slate-900">{profile?.full_name || "Chưa cập nhật"}</h2>
             <p className="text-sm text-slate-500">Vai trò: {profile?.role || "employee"} {profile?.employee_id ? `· Mã NV: ${profile.employee_id}` : ""}</p>
             <div className="flex flex-wrap gap-2 mt-2">
               <StatusBadge tone="green">Đang hoạt động</StatusBadge>

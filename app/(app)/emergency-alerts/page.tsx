@@ -1,34 +1,83 @@
 "use client";
 import PageHeader, { Card, StatusBadge } from "@/components/ui";
-import { AlertTriangle, Send } from "lucide-react";
-const alerts = [
-  { title: "Cháy bếp nhỏ tại chi nhánh Q.7", level: "Cao", time: "10 phút trước", confirmed: 12, total: 15, status: "Đang xử lý" },
-  { title: "Mất điện chi nhánh Thủ Đức", level: "Trung bình", time: "2 giờ trước", confirmed: 8, total: 8, status: "Đã xử lý" },
-  { title: "Nhân viên bị tai nạn lao động", level: "Cao", time: "1 ngày trước", confirmed: 20, total: 20, status: "Đã xử lý" },
-];
+import { AlertTriangle } from "lucide-react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useState, useEffect } from "react";
+
+interface Alert {
+  id: string;
+  title: string;
+  body: string;
+  severity: string;
+  time: string;
+}
+
 export default function EmergencyAlertsPage() {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      if (!isSupabaseConfigured) { setLoading(false); return; }
+
+      // Emergency alerts could be a special notification type or a dedicated table
+      // Using notifications with type = 'alert' or 'emergency'
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("id, title, body, type, created_at")
+        .in("type", ["alert", "emergency", "system"])
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (!error && data) {
+        setAlerts(data.map((n: any) => ({
+          id: n.id,
+          title: n.title,
+          body: n.body || "",
+          severity: n.type === "emergency" ? "Khẩn cấp" : n.type === "alert" ? "Cảnh báo" : "Thông tin",
+          time: new Date(n.created_at).toLocaleString("vi-VN"),
+        })));
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
   return (
     <>
-      <PageHeader title="Cảnh báo khẩn" subtitle="Gửi và quản lý cảnh báo khẩn cấp" icon={AlertTriangle}
-        action={<button className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-bold text-white"><Send size={16} /> Gửi cảnh báo</button>} />
-      <div className="space-y-3">
-        {alerts.map((a) => (
-          <Card key={a.title} className={a.status === "Đang xử lý" ? "border-rose-200 bg-rose-50/30" : ""}>
-            <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
-              <div className="flex items-center gap-2">
-                <AlertTriangle size={18} className={a.level === "Cao" ? "text-rose-600" : "text-orange-500"} />
-                <p className="font-bold text-slate-900">{a.title}</p>
+      <PageHeader title="Cảnh báo khẩn" subtitle="Thông báo khẩn cấp, bất thường" icon={AlertTriangle} />
+      {loading ? (
+        <p className="text-sm text-slate-500 py-4 text-center">Đang tải cảnh báo...</p>
+      ) : alerts.length === 0 ? (
+        <Card>
+          <div className="text-center py-12">
+            <AlertTriangle size={48} className="mx-auto text-slate-300 mb-4" />
+            <p className="text-slate-500 font-semibold">Không có cảnh báo khẩn nào</p>
+            <p className="text-xs text-slate-400 mt-1">Hệ thống đang hoạt động bình thường</p>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {alerts.map((a) => (
+            <Card key={a.id}>
+              <div className="flex flex-wrap items-start gap-3">
+                <div className={`h-10 w-10 rounded-xl grid place-items-center shrink-0 ${
+                  a.severity === "Khẩn cấp" ? "bg-rose-100 text-rose-600" : 
+                  a.severity === "Cảnh báo" ? "bg-amber-100 text-amber-600" : "bg-blue-100 text-blue-600"
+                }`}>
+                  <AlertTriangle size={20} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-slate-900">{a.title}</p>
+                  <p className="text-sm text-slate-500 mt-1">{a.body}</p>
+                  <p className="text-xs text-slate-400 mt-2">{a.time}</p>
+                </div>
+                <StatusBadge tone={a.severity === "Khẩn cấp" ? "red" : a.severity === "Cảnh báo" ? "orange" : "blue"}>{a.severity}</StatusBadge>
               </div>
-              <StatusBadge tone={a.status === "Đang xử lý" ? "red" : "green"}>{a.status}</StatusBadge>
-            </div>
-            <div className="flex flex-wrap gap-4 text-xs text-slate-500">
-              <span>Mức độ: <strong className={a.level === "Cao" ? "text-rose-600" : "text-orange-600"}>{a.level}</strong></span>
-              <span>{a.time}</span>
-              <span>Đã xác nhận: {a.confirmed}/{a.total}</span>
-            </div>
-          </Card>
-        ))}
-      </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </>
   );
 }

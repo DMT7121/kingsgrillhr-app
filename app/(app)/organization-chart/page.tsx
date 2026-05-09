@@ -1,41 +1,86 @@
 "use client";
 import PageHeader, { Card } from "@/components/ui";
 import { Network } from "lucide-react";
-const orgData = [
-  { dept: "Ban Giám đốc", head: "Trần Văn Bình", count: 3, sub: [
-    { dept: "Nhân sự", head: "Nguyễn Minh Anh", count: 12 },
-    { dept: "Kế toán", head: "Lê Thuỳ Linh", count: 8 },
-    { dept: "Kinh doanh", head: "Phạm Quốc Bảo", count: 28 },
-    { dept: "Vận hành", head: "Đỗ Ngọc Mai", count: 42 },
-    { dept: "Bếp", head: "Võ Đức Huy", count: 34 },
-    { dept: "Dịch vụ", head: "Hoàng Thanh Sơn", count: 26 },
-  ]}
-];
-export default function OrgChartPage() {
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useState, useEffect } from "react";
+
+interface OrgNode {
+  name: string;
+  position: string;
+  department: string;
+  branch: string;
+  code: string;
+}
+
+export default function OrganizationChartPage() {
+  const [nodes, setNodes] = useState<OrgNode[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      if (!isSupabaseConfigured) { setLoading(false); return; }
+
+      const { data, error } = await supabase
+        .from("employees")
+        .select(`
+          full_name, employee_code,
+          departments:department_id(name),
+          positions:position_id(name),
+          branches:branch_id(name)
+        `)
+        .eq("is_deleted", false)
+        .eq("status", "active")
+        .order("employee_code");
+
+      if (!error && data) {
+        setNodes(data.map((e: any) => ({
+          name: e.full_name,
+          code: e.employee_code,
+          position: e.positions?.name || "Nhân viên",
+          department: e.departments?.name || "Chưa phân bổ",
+          branch: e.branches?.name || "HQ",
+        })));
+      }
+      setLoading(false);
+    }
+    load();
+  }, []);
+
+  // Group by department
+  const deptMap = new Map<string, OrgNode[]>();
+  nodes.forEach(n => {
+    if (!deptMap.has(n.department)) deptMap.set(n.department, []);
+    deptMap.get(n.department)!.push(n);
+  });
+
   return (
     <>
-      <PageHeader title="Sơ đồ tổ chức" subtitle="Cấu trúc phòng ban King's Grill" icon={Network} />
-      {orgData.map((top) => (
-        <div key={top.dept}>
-          <Card className="mb-6 bg-gradient-to-br from-brand-600 to-brand-800 border-0">
-            <div className="text-center text-white">
-              <div className="h-16 w-16 mx-auto rounded-2xl bg-white/20 grid place-items-center text-2xl font-bold mb-3">{top.head.split(" ").pop()?.slice(0,2)}</div>
-              <p className="text-lg font-bold">{top.head}</p>
-              <p className="text-sm text-white/70">{top.dept} · {top.count} người</p>
-            </div>
-          </Card>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {top.sub.map((s) => (
-              <Card key={s.dept}>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-brand-100 grid place-items-center text-brand-700 font-bold shrink-0">{s.head.split(" ").pop()?.slice(0,2)}</div>
-                  <div><p className="font-bold text-slate-900">{s.dept}</p><p className="text-xs text-slate-500">{s.head} · {s.count} người</p></div>
-                </div>
-              </Card>
-            ))}
-          </div>
+      <PageHeader title="Sơ đồ tổ chức" subtitle="Cấu trúc phòng ban & nhân sự" icon={Network} />
+      {loading ? (
+        <p className="text-sm text-slate-500 py-4 text-center">Đang tải sơ đồ tổ chức...</p>
+      ) : deptMap.size === 0 ? (
+        <p className="text-sm text-slate-500 py-4 text-center">Chưa có dữ liệu nhân sự.</p>
+      ) : (
+        <div className="space-y-4">
+          {Array.from(deptMap.entries()).map(([dept, members]) => (
+            <Card key={dept} title={dept}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {members.map((m) => (
+                  <div key={m.code} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                    <div className="h-10 w-10 rounded-xl bg-brand-100 text-brand-700 grid place-items-center font-bold text-sm shrink-0">
+                      {m.name.split(" ").pop()?.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-slate-900 truncate">{m.name}</p>
+                      <p className="text-xs text-slate-500">{m.position} · {m.code}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))}
         </div>
-      ))}
+      )}
     </>
   );
 }
