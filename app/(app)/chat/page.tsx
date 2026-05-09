@@ -19,7 +19,7 @@ export default function ChatPage() {
   return (
     <>
       <PageHeader title="Chat nội bộ" subtitle="Nhắn tin nội bộ King's Grill" icon={MessageCircle} />
-      <div className="grid md:grid-cols-3 gap-4" style={{ minHeight: "60vh" }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{ minHeight: "60vh" }}>
         {/* Room list */}
         <Card className="md:col-span-1">
           <div className="space-y-1">

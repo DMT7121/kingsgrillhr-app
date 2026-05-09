@@ -41,7 +41,7 @@ export default function SettingsPage() {
       
       <div className="mb-6">
         <h3 className="text-sm font-bold text-slate-900 mb-3">Công cụ dành cho nhà phát triển</h3>
-        <Card className="flex items-center justify-between">
+        <Card className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <p className="font-bold text-slate-900">Kiểm tra Supabase Realtime</p>
             <p className="text-xs text-slate-500 mt-1">Gửi một thông báo test để kiểm tra tính năng đẩy thông báo trực tiếp (Push Notification). Hãy chắc chắn bạn đã chạy lệnh <code className="bg-slate-100 px-1 rounded text-pink-600">alter publication supabase_realtime add table public.notifications;</code> trong SQL Editor.</p>

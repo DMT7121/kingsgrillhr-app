@@ -11,9 +11,27 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
   body {
     @apply bg-slate-50 text-slate-900 font-sans;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+  /* Global anti-overflow: prevent any text from pushing containers */
+  p, span, h1, h2, h3, h4, h5, h6, td, th, li, a, label {
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  /* Ensure images never exceed container */
+  img, video, svg {
+    max-width: 100%;
+    height: auto;
+  }
+  /* Tables: prevent fixed-width columns from overflowing */
+  table {
+    table-layout: auto;
+    word-break: break-word;
   }
 }
 

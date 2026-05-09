@@ -26,13 +26,13 @@ export default function ApprovalsPage() {
     <>
       <PageHeader title="Phê duyệt" subtitle="Trung tâm phê duyệt đơn từ" icon={CheckSquare} />
 
-      <div className="grid grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         <StatCard label="Chờ duyệt" value={loading ? "-" : pendingCount.toString()} tone="orange" />
         <StatCard label="Đã duyệt" value={loading ? "-" : approvedCount.toString()} tone="green" />
         <StatCard label="Từ chối" value={loading ? "-" : rejectedCount.toString()} tone="red" />
       </div>
 
-      <div className="flex gap-1 mb-4">
+      <div className="flex flex-wrap gap-1 mb-4">
         {tabs.map((tab, i) => (
           <button key={tab} className={`px-4 py-2 rounded-xl text-sm font-semibold ${i === 0 ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-100"}`}>{tab}</button>
         ))}

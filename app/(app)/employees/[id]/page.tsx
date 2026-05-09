@@ -30,7 +30,7 @@ export default function EmployeeDetailPage() {
       </Card>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 overflow-x-auto pb-1">
+      <div className="flex flex-wrap gap-1 mb-6 pb-1">
         {tabs.map((tab, i) => (
           <button key={tab} className={`whitespace-nowrap px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
             i === 0 ? "bg-brand-600 text-white" : "text-slate-600 hover:bg-slate-100"

@@ -37,7 +37,7 @@ export default function RecruitmentPage() {
 
       {/* Pipeline */}
       <Card title="Pipeline ứng viên" className="mb-6">
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {pipeline.map((p) => (
             <div key={p.stage} className={`rounded-xl p-4 text-center ${p.color}`}>
               <p className="text-2xl font-extrabold">{p.count}</p>

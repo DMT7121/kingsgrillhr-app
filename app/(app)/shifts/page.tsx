@@ -31,7 +31,7 @@ export default function ShiftsPage() {
 
       {/* Week Calendar */}
       <Card title="Lịch tuần này" className="mb-6">
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
           {weekDays.map((day, i) => (
             <div key={i} className={`text-center p-3 rounded-xl text-xs ${i === 2 ? "bg-brand-600 text-white" : "bg-slate-50 text-slate-600"}`}>
               {day.split("\n").map((line, j) => (

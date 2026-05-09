@@ -47,7 +47,7 @@ export default function DashboardPage() {
 
       {/* Attendance Chart */}
       <Card title="Tình hình chấm công tuần này" className="mb-6">
-        <div className="flex items-center gap-6 mb-4 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-4 md:gap-6 mb-4 text-xs text-slate-500">
           <span className="flex items-center gap-1.5"><span className="h-2 w-6 rounded bg-brand-500" /> Có mặt</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-6 rounded bg-rose-400 opacity-60" /> Đi muộn</span>
           <span className="flex items-center gap-1.5"><span className="h-2 w-6 rounded bg-slate-200" /> Vắng</span>
@@ -68,7 +68,7 @@ export default function DashboardPage() {
 
       {/* Quick Actions */}
       <Card title="Thao tác nhanh" className="mb-6">
-        <div className="grid grid-cols-5 gap-2 md:gap-4">
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-4">
           {quickActions.map((a) => (
             <Link
               key={a.href}
@@ -105,7 +105,7 @@ export default function DashboardPage() {
 
         {/* Shift Coverage */}
         <Card title="Tình hình phủ ca hiện tại">
-          <div className="flex items-center gap-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
             <div className="relative h-28 w-28 shrink-0">
               <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                 <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="8" />
