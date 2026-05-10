@@ -1,16 +1,54 @@
 "use client";
 import PageHeader, { Card, StatusBadge } from "@/components/ui";
-import { UserCircle, Shield, Bell as BellIcon, KeyRound, Upload, Camera } from "lucide-react";
+import { UserCircle, Shield, Bell as BellIcon, KeyRound, Upload, Camera, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useToastStore } from "@/store/useToastStore";
-import { supabase } from "@/lib/supabase";
-import { useRef, useState } from "react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useRef, useState, useEffect } from "react";
+
+interface EmployeeInfo {
+  phone: string | null;
+  department: string | null;
+  position: string | null;
+  branch: string | null;
+  hire_date: string | null;
+  employee_code: string | null;
+}
 
 export default function ProfilePage() {
   const { profile, fetchProfile } = useAuthStore();
   const { addToast } = useToastStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [empInfo, setEmpInfo] = useState<EmployeeInfo | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !profile?.employee_id) return;
+
+    (async () => {
+      const { data } = await supabase
+        .from("employees")
+        .select(`
+          phone, hire_date, employee_code,
+          departments:department_id(name),
+          positions:position_id(name),
+          branches:branch_id(name)
+        `)
+        .eq("id", profile.employee_id)
+        .single();
+
+      if (data) {
+        setEmpInfo({
+          phone: (data as any).phone,
+          department: (data as any).departments?.name || null,
+          position: (data as any).positions?.name || null,
+          branch: (data as any).branches?.name || null,
+          hire_date: (data as any).hire_date,
+          employee_code: (data as any).employee_code,
+        });
+      }
+    })();
+  }, [profile?.employee_id]);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
@@ -59,6 +97,23 @@ export default function ProfilePage() {
     }
   };
 
+  const contactInfo = [
+    ["Email", profile?.email || "Chưa cập nhật"],
+    ["Điện thoại", empInfo?.phone || "Chưa cập nhật"],
+    ["Phòng ban", empInfo?.department || "Chưa cập nhật"],
+    ["Chức danh", empInfo?.position || "Chưa cập nhật"],
+    ["Chi nhánh", empInfo?.branch || "Chưa cập nhật"],
+    ["Ngày vào làm", empInfo?.hire_date ? new Date(empInfo.hire_date).toLocaleDateString("vi-VN") : "Chưa cập nhật"],
+  ];
+
+  const roleDisplay: Record<string, string> = {
+    employee: "Nhân viên",
+    manager: "Quản lý",
+    hr: "HR",
+    admin: "Admin",
+    super_admin: "Super Admin",
+  };
+
   return (
     <>
       <PageHeader title="Hồ sơ cá nhân" subtitle="Thông tin tài khoản và bảo mật" icon={UserCircle} />
@@ -78,7 +133,7 @@ export default function ProfilePage() {
             </div>
             {uploading && (
               <div className="absolute inset-0 grid place-items-center bg-white/50 rounded-2xl">
-                <div className="w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+                <Loader2 size={20} className="animate-spin text-brand-600" />
               </div>
             )}
           </div>
@@ -92,11 +147,14 @@ export default function ProfilePage() {
           />
 
           <div className="flex-1 min-w-0">
-            <h2 className="text-xl font-bold text-slate-900">{profile?.full_name || "Chưa cập nhật"}</h2>
-            <p className="text-sm text-slate-500">Vai trò: {profile?.role || "employee"} {profile?.employee_id ? `· Mã NV: ${profile.employee_id}` : ""}</p>
+            <h2 className="text-xl font-bold text-slate-900">{profile?.full_name || "Người dùng"}</h2>
+            <p className="text-sm text-slate-500">
+              {roleDisplay[profile?.role || "employee"] || profile?.role}
+              {empInfo?.employee_code ? ` · Mã NV: ${empInfo.employee_code}` : ""}
+            </p>
             <div className="flex flex-wrap gap-2 mt-2">
               <StatusBadge tone="green">Đang hoạt động</StatusBadge>
-              <StatusBadge tone="blue" className="capitalize">{profile?.role || "Employee"}</StatusBadge>
+              <StatusBadge tone="blue" className="capitalize">{roleDisplay[profile?.role || "employee"] || profile?.role}</StatusBadge>
             </div>
           </div>
           <button className="rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200" onClick={() => fileInputRef.current?.click()}>
@@ -107,7 +165,7 @@ export default function ProfilePage() {
       <div className="grid md:grid-cols-2 gap-4">
         <Card title="Thông tin liên hệ">
           <div className="space-y-3">
-            {[["Email", profile?.email || "Chưa cập nhật"], ["Điện thoại", "Chưa cập nhật"], ["Địa chỉ", "Chưa cập nhật"]].map(([k, v]) => (
+            {contactInfo.map(([k, v]) => (
               <div key={k} className="flex justify-between py-2 border-b border-slate-50 last:border-0">
                 <span className="text-sm text-slate-500">{k}</span><span className="text-sm font-semibold text-slate-900">{v}</span>
               </div>
@@ -116,7 +174,7 @@ export default function ProfilePage() {
         </Card>
         <Card title="Bảo mật">
           <div className="space-y-3">
-            {[{ icon: KeyRound, label: "Đổi mật khẩu", sub: "Lần cuối: 15/04/2026" }, { icon: Shield, label: "Xác thực 2 bước", sub: "Đã bật" }, { icon: BellIcon, label: "Cài đặt thông báo", sub: "Email + Push" }].map((item) => (
+            {[{ icon: KeyRound, label: "Đổi mật khẩu", sub: "Cập nhật mật khẩu tài khoản" }, { icon: Shield, label: "Xác thực 2 bước", sub: "Tăng cường bảo mật" }, { icon: BellIcon, label: "Cài đặt thông báo", sub: "Email + Push" }].map((item) => (
                <div key={item.label} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
                  <item.icon size={18} className="text-brand-600 shrink-0" />
                  <div className="flex-1"><p className="text-sm font-semibold text-slate-900">{item.label}</p><p className="text-xs text-slate-500">{item.sub}</p></div>
