@@ -256,10 +256,9 @@ export default function AttendancePage() {
             work_date: todayStr,
             check_in: now.toISOString(),
             status: "present",
-            check_in_photo: photoUrl,
+            check_in_photo_url: photoUrl,
             check_in_lat: location.lat,
             check_in_lng: location.lng,
-            check_in_address: location.address,
           });
           if (error) throw error;
           setTodayCheckedIn(true);
@@ -283,10 +282,9 @@ export default function AttendancePage() {
               .update({
                 check_out: now.toISOString(),
                 work_hours: workHours,
-                check_out_photo: photoUrl,
+                check_out_photo_url: photoUrl,
                 check_out_lat: location.lat,
                 check_out_lng: location.lng,
-                check_out_address: location.address,
               })
               .eq("id", existing.id);
             if (error) throw error;
@@ -297,7 +295,7 @@ export default function AttendancePage() {
               work_date: todayStr,
               check_out: now.toISOString(),
               status: "present",
-              check_out_photo: photoUrl,
+              check_out_photo_url: photoUrl,
             });
             if (error) throw error;
           }
