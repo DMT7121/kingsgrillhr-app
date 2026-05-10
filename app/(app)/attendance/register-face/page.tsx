@@ -49,17 +49,36 @@ export default function RegisterFacePage() {
   };
 
   const saveDescriptor = async () => {
-    if (samples.length < REQUIRED_SAMPLES || !profile?.employee_id) return;
+    if (samples.length < REQUIRED_SAMPLES) return;
+
+    // Determine which employee record to update
+    const empId = profile?.employee_id;
+    if (!empId) {
+      addToast({ title: "Lỗi liên kết", message: "Tài khoản chưa được liên kết với nhân viên. Liên hệ HR để được hỗ trợ.", type: "error" });
+      // Fallback: try to find employee by email
+      if (!profile?.email) return;
+      const { data: emp } = await supabase.from("employees").select("id").eq("email", profile.email).limit(1).single();
+      if (!emp) {
+        addToast({ title: "Không tìm thấy", message: `Không tìm thấy nhân viên với email ${profile.email}`, type: "error" });
+        return;
+      }
+      // Auto-link profile to employee
+      await supabase.from("profiles").update({ employee_id: emp.id }).eq("id", profile.id);
+      // Continue saving with found employee id
+      return saveToEmployee(emp.id);
+    }
+    return saveToEmployee(empId);
+  };
+
+  const saveToEmployee = async (employeeId: string) => {
     setSaving(true);
     try {
-      // Average the descriptors
       const avg = new Float32Array(128);
       samples.forEach(s => { for (let i = 0; i < 128; i++) avg[i] += s[i]; });
       for (let i = 0; i < 128; i++) avg[i] /= samples.length;
-
       const descriptorArray = Array.from(avg);
 
-      const { error } = await supabase.from("employees").update({ face_descriptor: descriptorArray }).eq("id", profile.employee_id);
+      const { error } = await supabase.from("employees").update({ face_descriptor: descriptorArray }).eq("id", employeeId);
       if (error) throw error;
       setDone(true);
       addToast({ title: "Thành công!", message: "Đã lưu khuôn mặt. Bạn có thể chấm công bằng Face ID.", type: "success" });
