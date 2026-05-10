@@ -77,6 +77,9 @@ export default function DocumentsPage() {
   const total = documents.length;
   const signed = documents.filter(d => d.status === "Đã ký" || d.status === "Đã nộp").length;
 
+  const pendingSigning = documents.filter(d => d.status === "Chờ ký").length;
+  const expiringSoon = 0; // No expiry date field in current schema
+
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -104,8 +107,8 @@ export default function DocumentsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <StatCard label="Tổng tài liệu" value={loading ? "-" : total.toString()} tone="blue" />
         <StatCard label="Đã ký / Đã nộp" value={loading ? "-" : signed.toString()} tone="green" />
-        <StatCard label="Chờ ký" value="0" tone="orange" />
-        <StatCard label="Sắp hết hạn" value="0" tone="red" />
+        <StatCard label="Chờ ký" value={loading ? "-" : pendingSigning.toString()} tone="orange" />
+        <StatCard label="Sắp hết hạn" value={loading ? "-" : expiringSoon.toString()} tone="red" />
       </div>
       <Card>
         {loading ? (
