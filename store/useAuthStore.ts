@@ -99,6 +99,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       .eq("id", userId)
       .single();
     if (data) {
+      // Auto-link employee_id by email if missing
+      if (!data.employee_id && data.email) {
+        const { data: emp } = await supabase
+          .from("employees")
+          .select("id")
+          .eq("email", data.email)
+          .limit(1)
+          .single();
+        if (emp) {
+          await supabase.from("profiles").update({ employee_id: emp.id }).eq("id", userId);
+          data.employee_id = emp.id;
+        }
+      }
       set({ profile: data as Profile });
     }
   },

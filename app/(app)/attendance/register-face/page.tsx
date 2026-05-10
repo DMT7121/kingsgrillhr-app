@@ -52,21 +52,23 @@ export default function RegisterFacePage() {
     if (samples.length < REQUIRED_SAMPLES) return;
 
     // Determine which employee record to update
-    const empId = profile?.employee_id;
+    let empId = profile?.employee_id;
+
+    // If not linked, try to find and link by email
+    if (!empId && profile?.email) {
+      const { data: emp } = await supabase.from("employees").select("id").eq("email", profile.email).limit(1).single();
+      if (emp) {
+        // Auto-link profile to employee
+        await supabase.from("profiles").update({ employee_id: emp.id }).eq("id", profile.id);
+        empId = emp.id;
+      }
+    }
+
     if (!empId) {
       addToast({ title: "Lỗi liên kết", message: "Tài khoản chưa được liên kết với nhân viên. Liên hệ HR để được hỗ trợ.", type: "error" });
-      // Fallback: try to find employee by email
-      if (!profile?.email) return;
-      const { data: emp } = await supabase.from("employees").select("id").eq("email", profile.email).limit(1).single();
-      if (!emp) {
-        addToast({ title: "Không tìm thấy", message: `Không tìm thấy nhân viên với email ${profile.email}`, type: "error" });
-        return;
-      }
-      // Auto-link profile to employee
-      await supabase.from("profiles").update({ employee_id: emp.id }).eq("id", profile.id);
-      // Continue saving with found employee id
-      return saveToEmployee(emp.id);
+      return;
     }
+
     return saveToEmployee(empId);
   };
 
